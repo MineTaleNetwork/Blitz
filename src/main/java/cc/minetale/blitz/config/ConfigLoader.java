@@ -2,7 +2,6 @@ package cc.minetale.blitz.config;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonParser;
 
 import java.io.File;
 import java.io.IOException;
@@ -20,7 +19,7 @@ public class ConfigLoader {
         }
 
         if (file.createNewFile()) {
-            String json = gson.toJson(JsonParser.parseString(gson.toJson(config)));
+            String json = gson.toJson(config);
             try (PrintWriter out = new PrintWriter(file)) {
                 out.println(json);
             }
@@ -33,7 +32,7 @@ public class ConfigLoader {
 
     public static void saveConfig(Object config, File file) throws IOException {
         file.createNewFile();
-        String json = gson.toJson(JsonParser.parseString(gson.toJson(config)));
+        String json = gson.toJson(config);
         try (PrintWriter out = new PrintWriter(file)) {
             out.println(json);
         }
