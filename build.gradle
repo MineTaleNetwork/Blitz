@@ -20,6 +20,7 @@ dependencies {
 
     compileOnly     group: 'com.velocitypowered', name: 'velocity-api', version: '3.0.1'
     implementation  group: 'cc.minetale',         name: 'CommonLib',    version: 'LATEST'
+    implementation  group: 'org.ehcache',         name: 'ehcache',      version: '3.9.7'
 }
 
 sourceCompatibility = 17
@@ -46,4 +47,4 @@ tasks.withType(Jar) {
     destinationDirectory = file("../../Build")
 }
 
-task buildJar(dependsOn: ['clean', 'publishToMavenLocal'])
+task buildJar(dependsOn: ['publishToMavenLocal'])

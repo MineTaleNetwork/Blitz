@@ -1,0 +1,9 @@
+{
+  "id": "blitz",
+  "name": "Blitz",
+  "version": "LATEST",
+  "description": "Backend proxy plugin for Velocity",
+  "authors": ["oHate", "BitCrack"],
+  "dependencies": [],
+  "main": "cc.minetale.blitz.Blitz"
+}
