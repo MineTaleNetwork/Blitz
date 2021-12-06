@@ -4,6 +4,7 @@ import cc.minetale.commonlib.util.MC;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.format.TextColor;
 
 import java.util.*;
@@ -49,16 +50,16 @@ public class Party {
 
     public void addMember(BlitzPlayer player) {
         if (this.members.contains(player)) {
-            player.sendNotification("Party", MC.component("You are already in that party.", MC.CC.RED));
+            player.sendNotification("Party", Component.text("You are already in that party.", NamedTextColor.RED));
             return;
         }
 
         this.members.add(player);
 
-        this.sendPartyMessage(MC.component(
+        this.sendPartyMessage(Component.text().append(
                 player.getProfile().getChatFormat(),
-                MC.component(" has joined the party.", MC.CC.GREEN)
-        ));
+                Component.text(" has joined the party.", NamedTextColor.GREEN)
+        ).build());
     }
 
     // TODO -> Was removed from the party
@@ -68,14 +69,14 @@ public class Party {
 
     public void sendPartyMessage(BlitzPlayer player, String message) {
         var profile = player.getProfile();
-        var color = profile.getGrant().getRank().getRankColor().getColor();
+        var color = profile.getGrant().getRank().getColor();
 
         this.sendPartyMessage(
-                MC.component(profile.getChatFormat(),
-                        MC.component(" » ", MC.CC.DARK_GRAY),
-                        Component.text(message, TextColor.color(MC.Style.bleach(color, 0.80)))
-                )
-        );
+                Component.text().append(
+                        profile.getChatFormat(),
+                        Component.text(" » ", NamedTextColor.DARK_GRAY),
+                        Component.text(message, MC.toTextColor(MC.bleach(MC.fromNamedTextColor(color), 0.80)))
+                ).build());
     }
 
     public void sendPartyMessage(Component message) {
@@ -101,7 +102,7 @@ public class Party {
     }
 
     public void disbandParty(String reason) {
-        this.sendPartyMessage(MC.component(reason, MC.CC.RED));
+        this.sendPartyMessage(Component.text(reason, NamedTextColor.RED));
 
         parties.remove(this);
     }

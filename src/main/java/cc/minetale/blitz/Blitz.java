@@ -1,7 +1,7 @@
 package cc.minetale.blitz;
 
 import cc.minetale.blitz.api.StaffMembers;
-import cc.minetale.blitz.listeners.pigeon.RankListener;
+import cc.minetale.blitz.listeners.pigeon.PlayerListener;
 import cc.minetale.blitz.listeners.velocity.PlayerEvents;
 import cc.minetale.blitz.manager.PlayerManager;
 import cc.minetale.commonlib.CommonLib;
@@ -75,7 +75,7 @@ public class Blitz {
         );
 
         Arrays.asList(
-                new RankListener()
+                new PlayerListener()
         ).forEach(listener -> this.pigeon.getListenersRegistry().registerListener(listener));
 
         this.pigeon.setupDefaultUpdater();

@@ -102,7 +102,10 @@ public class PlayerManager {
                     var document = Database.getDatabase().getProfilesCollection().find(Filters.eq(uuid.toString())).first();
                     if(document == null) { return null; }
 
-                    Profile profile = Profile.fromDocument(document);
+                    var profile = Profile.fromDocument(document);
+
+                    if(profile == null) { return null; }
+
                     player = this.cache.get(profile.getId());
 
                     if(player != null) {

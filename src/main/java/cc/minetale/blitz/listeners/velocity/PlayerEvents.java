@@ -14,6 +14,7 @@ import com.velocitypowered.api.event.connection.DisconnectEvent;
 import com.velocitypowered.api.event.connection.LoginEvent;
 import com.velocitypowered.api.event.player.ServerConnectedEvent;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 
 import java.nio.charset.StandardCharsets;
 
@@ -69,7 +70,7 @@ public class PlayerEvents {
                                     manager.updateProfile(profile);
                                 });
                             }
-                            default -> player.disconnect(MC.component("Failed to load your profile. Try again later.", MC.CC.RED));
+                            default -> player.disconnect(Component.text("Failed to load your profile. Try again later.", NamedTextColor.RED));
                         }
                     });
         });
@@ -87,31 +88,27 @@ public class PlayerEvents {
             BlitzPlayer.getBlitzPlayer(player.getUniqueId()).thenAccept(blitzPlayer -> {
                 var profile = blitzPlayer.getProfile();
 
-                if (Rank.hasMinimumRank(profile, "Helper")) {
+                if (Rank.hasMinimumRank(profile, Rank.HELPER)) {
                     if (previousServer.isEmpty()) {
                         StaffMembers.getStaffMembers().getAudience().add(blitzPlayer);
 
                         StaffMembers.getStaffMembers().sendMessage(
-                                MC.Chat.notificationMessage("Staff",
-                                        MC.component(
+                                MC.notificationMessage("Staff",
+                                        Component.text().append(
                                                 profile.getChatFormat(),
-                                                MC.component(" has connected to ", MC.CC.GRAY),
-                                                MC.component(server.getName(), MC.CC.GOLD)
-                                        )
-                                )
-                        );
+                                                Component.text(" has connected to ", NamedTextColor.GRAY),
+                                                Component.text(server.getName(), NamedTextColor.GOLD)
+                                        ).build()));
                     } else {
                         StaffMembers.getStaffMembers().sendMessage(
-                                MC.Chat.notificationMessage("Staff",
-                                        MC.component(
+                                MC.notificationMessage("Staff",
+                                        Component.text().append(
                                                 profile.getChatFormat(),
-                                                MC.component(" has connected to ", MC.CC.GRAY),
-                                                MC.component(server.getName(), MC.CC.GOLD),
-                                                MC.component(" from ", MC.CC.GRAY),
-                                                MC.component(previousServer.get().getServerInfo().getName())
-                                        )
-                                )
-                        );
+                                                Component.text(" has connected to ", NamedTextColor.GRAY),
+                                                Component.text(server.getName(), NamedTextColor.GOLD),
+                                                Component.text(" from ", NamedTextColor.GRAY),
+                                                Component.text(previousServer.get().getServerInfo().getName(), NamedTextColor.GOLD)
+                                        ).build()));
                     }
                 }
             });
@@ -129,18 +126,17 @@ public class PlayerEvents {
 
             StaffMembers.getStaffMembers().getAudience().remove(blitzPlayer);
 
-            if (Rank.hasMinimumRank(profile, "Helper")) {
+            if (Rank.hasMinimumRank(profile, Rank.HELPER)) {
                 var currentServer = player.getCurrentServer();
 
                 currentServer.ifPresent(server -> StaffMembers.getStaffMembers().sendMessage(
-                        MC.Chat.notificationMessage("Staff",
-                                MC.component(
+                        MC.notificationMessage("Staff",
+                                Component.text().append(
                                         profile.getChatFormat(),
-                                        MC.component(" has disconnected from ", MC.CC.GRAY),
-                                        MC.component(server.getServerInfo().getName(), MC.CC.GOLD)
-                                )
-                        )
-                ));
+                                        Component.text(" has disconnected from ", NamedTextColor.GRAY),
+                                        Component.text(server.getServerInfo().getName(), NamedTextColor.GOLD)
+                                ).build()))
+                );
             }
         });
     }

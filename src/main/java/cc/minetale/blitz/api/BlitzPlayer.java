@@ -63,7 +63,7 @@ public class BlitzPlayer implements ForwardingAudience {
     }
 
     public void sendNotification(String prefix, Component message) {
-        this.sendMessage(MC.Chat.notificationMessage(prefix, message));
+        this.sendMessage(MC.notificationMessage(prefix, message));
     }
 
     public void sendMessage(@NotNull Component message) {

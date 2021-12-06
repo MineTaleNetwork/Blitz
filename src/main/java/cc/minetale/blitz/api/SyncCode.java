@@ -1,6 +1,6 @@
 package cc.minetale.blitz.api;
 
-import cc.minetale.commonlib.util.Util;
+import cc.minetale.commonlib.util.StringUtil;
 import lombok.Getter;
 
 @Getter
@@ -13,7 +13,7 @@ public class SyncCode {
 
     public SyncCode(BlitzPlayer player) {
         this.player = player;
-        this.code = Util.generateId();
+        this.code = StringUtil.generateId();
 
 //        this.timer = new SyncCodeTimer(this);
     }
