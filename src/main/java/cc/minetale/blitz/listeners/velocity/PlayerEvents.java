@@ -61,7 +61,7 @@ public class PlayerEvents {
                                     Profile.Staff staff = profile.getStaffProfile();
 
                                     if (!profile.getCurrentAddress().equals(hashedIP)) {
-                                        if (staff.isTwoFactor() && !staff.isLocked())
+                                        if (staff.getTwoFactorKey() != null)
                                             staff.setLocked(true);
 
                                         profile.setCurrentAddress(hashedIP);

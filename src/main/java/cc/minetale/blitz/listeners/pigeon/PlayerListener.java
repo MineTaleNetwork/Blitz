@@ -32,13 +32,14 @@ public class PlayerListener implements Listener {
 
     @PayloadHandler(requiredState = RequiredState.REQUEST)
     public void onProfileRequest(ProfileRequestPayload payload) {
-        System.out.println("Got a Profile Request");
+        System.out.println("Profile Request: " + payload.toString());
 
         var playerManager = PlayerManager.getPlayerManager();
 
         switch (payload.getType()) {
             case SINGLE -> {
                 playerManager.getProfile(payload.getId()).thenAccept(profile -> {
+                    System.out.println("Got profile: " + profile.getName());
                     payload.sendResponse(new ProfileRequestPayload(ProfileQueryResult.RETRIEVED, Collections.singletonList(profile)));
                 });
             }
