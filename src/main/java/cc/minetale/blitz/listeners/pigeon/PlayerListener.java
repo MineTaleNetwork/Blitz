@@ -32,14 +32,11 @@ public class PlayerListener implements Listener {
 
     @PayloadHandler(requiredState = RequiredState.REQUEST)
     public void onProfileRequest(ProfileRequestPayload payload) {
-        System.out.println("Profile Request: " + payload.toString());
-
         var playerManager = PlayerManager.getPlayerManager();
 
         switch (payload.getType()) {
             case SINGLE -> {
                 playerManager.getProfile(payload.getId()).thenAccept(profile -> {
-                    System.out.println("Got profile: " + profile.getName());
                     payload.sendResponse(new ProfileRequestPayload(ProfileQueryResult.RETRIEVED, Collections.singletonList(profile)));
                 });
             }
@@ -176,7 +173,7 @@ public class PlayerListener implements Listener {
     }
 
     @PayloadHandler
-    public void onProfileUpdateUpdate(ProfileUpdatePayload payload) {
+    public void onProfileUpdate(ProfileUpdatePayload payload) {
         var profile = payload.getProfile();
 
         BlitzPlayer.getBlitzPlayer(profile.getId()).thenAccept(player -> player.setProfile(profile));
