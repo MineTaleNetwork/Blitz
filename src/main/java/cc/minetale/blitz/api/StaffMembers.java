@@ -1,24 +1,16 @@
 package cc.minetale.blitz.api;
 
-import lombok.Getter;
 import net.kyori.adventure.text.Component;
 
 import java.util.HashSet;
 import java.util.Set;
 
-@Getter
 public class StaffMembers {
 
-    @Getter private static StaffMembers staffMembers;
-    private final Set<BlitzPlayer> audience;
+    private static final Set<BlitzPlayer> members = new HashSet<>();
 
-    public StaffMembers() {
-        StaffMembers.staffMembers = this;
-        this.audience = new HashSet<>();
-    }
-
-    public void sendMessage(Component component) {
-        audience.forEach(blitzPlayer -> {
+    public static void sendMessage(Component component) {
+        members.forEach(blitzPlayer -> {
             var optionalPlayer = blitzPlayer.getProxyPlayer();
             if(optionalPlayer.isPresent()) {
                 var profile = blitzPlayer.getProfile();
@@ -30,6 +22,14 @@ public class StaffMembers {
                 }
             }
         });
+    }
+
+    public static void addMember(BlitzPlayer player) {
+        members.add(player);
+    }
+
+    public static void removeMember(BlitzPlayer player) {
+        members.remove(player);
     }
 
 }

@@ -5,10 +5,8 @@ import com.velocitypowered.api.proxy.server.RegisteredServer;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
-import net.kyori.adventure.text.format.TextColor;
 
 import java.util.*;
-import java.util.List;
 
 @Getter
 public class Party {

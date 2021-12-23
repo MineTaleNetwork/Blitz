@@ -45,7 +45,6 @@ public class Blitz {
         this.loadMongo();
 
         new PlayerManager(CacheManagerBuilder.newCacheManagerBuilder().build(true));
-        new StaffMembers();
         new CommonLib(this.mongoClient, this.mongoDatabase, this.pigeon);
 
         server.getEventManager().register(this, new PlayerEvents());

@@ -3,21 +3,21 @@ package cc.minetale.blitz.api;
 import cc.minetale.blitz.Blitz;
 import cc.minetale.blitz.manager.PlayerManager;
 import cc.minetale.commonlib.profile.Profile;
-import cc.minetale.commonlib.profile.ProfileQueryResult;
 import cc.minetale.commonlib.util.MC;
 import com.velocitypowered.api.proxy.Player;
 import lombok.Getter;
 import lombok.Setter;
-import net.kyori.adventure.audience.Audience;
-import net.kyori.adventure.audience.ForwardingAudience;
 import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 
 @Getter @Setter
-public class BlitzPlayer implements ForwardingAudience {
+public class BlitzPlayer {
 
     private final UUID uniqueId;
     private final Map<BlitzPlayer, PartyInvite> partyInvites; // BlitzPlayer -> Inviter | TODO -> BitCrack will rework this
@@ -99,14 +99,4 @@ public class BlitzPlayer implements ForwardingAudience {
         return this.uniqueId.hashCode();
     }
 
-    @Override
-    public @NotNull Iterable<? extends Audience> audiences() {
-        var proxyPlayer = getProxyPlayer();
-
-        if(proxyPlayer.isPresent()) {
-            return Collections.singletonList(proxyPlayer.get());
-        } else {
-            return Collections.emptyList();
-        }
-    }
 }

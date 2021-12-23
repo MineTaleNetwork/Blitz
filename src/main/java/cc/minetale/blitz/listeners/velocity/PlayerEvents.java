@@ -1,5 +1,6 @@
 package cc.minetale.blitz.listeners.velocity;
 
+import cc.minetale.blitz.Blitz;
 import cc.minetale.blitz.api.BlitzPlayer;
 import cc.minetale.blitz.api.StaffMembers;
 import cc.minetale.blitz.manager.PlayerManager;
@@ -17,6 +18,7 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.format.NamedTextColor;
 
 import java.nio.charset.StandardCharsets;
+import java.util.concurrent.TimeUnit;
 
 public class PlayerEvents {
 
@@ -61,7 +63,7 @@ public class PlayerEvents {
                                     Profile.Staff staff = profile.getStaffProfile();
 
                                     if (!profile.getCurrentAddress().equals(hashedIP)) {
-                                        if (staff.isTwoFactor() && !staff.isLocked())
+                                        if (!staff.getTwoFactorKey().isEmpty() && !staff.isLocked())
                                             staff.setLocked(true);
 
                                         profile.setCurrentAddress(hashedIP);
@@ -79,66 +81,68 @@ public class PlayerEvents {
     @Subscribe
     public void onPlayerConnect(ServerConnectedEvent event) {
         var player = event.getPlayer();
-        var optionalServer = player.getCurrentServer();
+        var server = event.getServer().getServerInfo();
+        var previousServer = event.getPreviousServer();
 
-        if (optionalServer.isPresent()) {
-            var server = optionalServer.get().getServerInfo();
-            var previousServer = event.getPreviousServer();
+        BlitzPlayer.getBlitzPlayer(player.getUniqueId()).thenAccept(blitzPlayer -> {
+            var profile = blitzPlayer.getProfile();
 
-            BlitzPlayer.getBlitzPlayer(player.getUniqueId()).thenAccept(blitzPlayer -> {
-                var profile = blitzPlayer.getProfile();
+            if (Rank.hasMinimumRank(profile, Rank.HELPER)) {
+                if (previousServer.isEmpty()) {
+                    StaffMembers.addMember(blitzPlayer);
 
-                if (Rank.hasMinimumRank(profile, Rank.HELPER)) {
-                    if (previousServer.isEmpty()) {
-                        StaffMembers.getStaffMembers().getAudience().add(blitzPlayer);
-
-                        StaffMembers.getStaffMembers().sendMessage(
-                                MC.notificationMessage("Staff",
-                                        Component.text().append(
-                                                profile.getChatFormat(),
-                                                Component.text(" has connected to ", NamedTextColor.GRAY),
-                                                Component.text(server.getName(), NamedTextColor.GOLD)
-                                        ).build()));
-                    } else {
-                        StaffMembers.getStaffMembers().sendMessage(
-                                MC.notificationMessage("Staff",
-                                        Component.text().append(
-                                                profile.getChatFormat(),
-                                                Component.text(" has connected to ", NamedTextColor.GRAY),
-                                                Component.text(server.getName(), NamedTextColor.GOLD),
-                                                Component.text(" from ", NamedTextColor.GRAY),
-                                                Component.text(previousServer.get().getServerInfo().getName(), NamedTextColor.GOLD)
-                                        ).build()));
-                    }
+                    delay(() -> StaffMembers.sendMessage(
+                            MC.notificationMessage("Staff",
+                                    Component.text().append(
+                                            profile.getChatFormat(),
+                                            Component.text(" has connected to ", NamedTextColor.GRAY),
+                                            Component.text(server.getName(), NamedTextColor.GOLD)
+                                    ).build())));
+                } else {
+                    delay(() -> StaffMembers.sendMessage(
+                            MC.notificationMessage("Staff",
+                                    Component.text().append(
+                                            profile.getChatFormat(),
+                                            Component.text(" has connected to ", NamedTextColor.GRAY),
+                                            Component.text(server.getName(), NamedTextColor.GOLD),
+                                            Component.text(" from ", NamedTextColor.GRAY),
+                                            Component.text(previousServer.get().getServerInfo().getName(), NamedTextColor.GOLD)
+                                    ).build())));
                 }
-            });
-        }
+            }
+        });
     }
 
     @Subscribe
     public void onPlayerDisconnect(DisconnectEvent event) {
-        if (event.getLoginStatus() == DisconnectEvent.LoginStatus.PRE_SERVER_JOIN) return;
+        if (event.getLoginStatus() != DisconnectEvent.LoginStatus.SUCCESSFUL_LOGIN) return;
 
         var player = event.getPlayer();
 
         BlitzPlayer.getBlitzPlayer(player.getUniqueId()).thenAccept(blitzPlayer -> {
             var profile = blitzPlayer.getProfile();
 
-            StaffMembers.getStaffMembers().getAudience().remove(blitzPlayer);
+            StaffMembers.removeMember(blitzPlayer);
 
             if (Rank.hasMinimumRank(profile, Rank.HELPER)) {
                 var currentServer = player.getCurrentServer();
 
-                currentServer.ifPresent(server -> StaffMembers.getStaffMembers().sendMessage(
-                        MC.notificationMessage("Staff",
-                                Component.text().append(
-                                        profile.getChatFormat(),
-                                        Component.text(" has disconnected from ", NamedTextColor.GRAY),
-                                        Component.text(server.getServerInfo().getName(), NamedTextColor.GOLD)
-                                ).build()))
+                currentServer.ifPresent(server -> delay(() -> StaffMembers.sendMessage(
+                                MC.notificationMessage("Staff",
+                                        Component.text().append(
+                                                profile.getChatFormat(),
+                                                Component.text(" has disconnected from ", NamedTextColor.GRAY),
+                                                Component.text(server.getServerInfo().getName(), NamedTextColor.GOLD)
+                                        ).build())))
                 );
             }
         });
+    }
+
+    private void delay(Runnable runnable) {
+        var blitz = Blitz.getBlitz();
+
+        blitz.getServer().getScheduler().buildTask(blitz, runnable).delay(2, TimeUnit.SECONDS).schedule();
     }
 
 }
