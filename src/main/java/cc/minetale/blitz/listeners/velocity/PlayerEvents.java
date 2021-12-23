@@ -128,12 +128,12 @@ public class PlayerEvents {
                 var currentServer = player.getCurrentServer();
 
                 currentServer.ifPresent(server -> delay(() -> StaffMembers.sendMessage(
-                                MC.notificationMessage("Staff",
-                                        Component.text().append(
-                                                profile.getChatFormat(),
-                                                Component.text(" has disconnected from ", NamedTextColor.GRAY),
-                                                Component.text(server.getServerInfo().getName(), NamedTextColor.GOLD)
-                                        ).build())))
+                        MC.notificationMessage("Staff",
+                                Component.text().append(
+                                        profile.getChatFormat(),
+                                        Component.text(" has disconnected from ", NamedTextColor.GRAY),
+                                        Component.text(server.getServerInfo().getName(), NamedTextColor.GOLD)
+                                ).build())))
                 );
             }
         });

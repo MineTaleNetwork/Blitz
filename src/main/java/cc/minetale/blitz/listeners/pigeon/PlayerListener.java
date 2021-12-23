@@ -187,7 +187,7 @@ public class PlayerListener implements Listener {
     }
 
     @PayloadHandler
-    public void onProfileUpdateUpdate(ProfileUpdatePayload payload) {
+    public void onProfileUpdate(ProfileUpdatePayload payload) {
         var profile = payload.getProfile();
 
         BlitzPlayer.getBlitzPlayer(profile.getId()).thenAccept(player -> {
