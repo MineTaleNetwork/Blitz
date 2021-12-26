@@ -2,7 +2,7 @@ package cc.minetale.blitz.api;
 
 import cc.minetale.blitz.Blitz;
 import cc.minetale.blitz.manager.PlayerManager;
-import cc.minetale.commonlib.profile.Profile;
+import cc.minetale.commonlib.api.Profile;
 import cc.minetale.commonlib.util.MC;
 import com.velocitypowered.api.proxy.Player;
 import lombok.Getter;
@@ -41,18 +41,18 @@ public class BlitzPlayer {
     }
 
     public static CompletableFuture<BlitzPlayer> getBlitzPlayer(UUID uniqueId) {
-        var manager = PlayerManager.getPlayerManager();
-        var player = manager.getCache().get(uniqueId);
+        var player = PlayerManager.getCache().get(uniqueId);
 
         if (player == null) {
             player = new BlitzPlayer(uniqueId);
 
             final var finalPlayer = player;
 
-            return manager.getProfile(uniqueId).thenCompose(profile -> {
-                finalPlayer.setProfile(profile);
-                return CompletableFuture.completedFuture(finalPlayer);
-            });
+            return PlayerManager.getProfile(uniqueId)
+                    .thenCompose(profile -> {
+                        finalPlayer.setProfile(profile);
+                        return CompletableFuture.completedFuture(finalPlayer);
+                    });
         }
 
         return CompletableFuture.completedFuture(player);
