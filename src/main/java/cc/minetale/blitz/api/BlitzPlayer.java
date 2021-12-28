@@ -1,8 +1,7 @@
 package cc.minetale.blitz.api;
 
 import cc.minetale.blitz.Blitz;
-import cc.minetale.blitz.manager.PlayerManager;
-import cc.minetale.commonlib.api.Profile;
+import cc.minetale.commonlib.profile.Profile;
 import cc.minetale.commonlib.util.MC;
 import com.velocitypowered.api.proxy.Player;
 import lombok.Getter;
@@ -26,7 +25,7 @@ public class BlitzPlayer {
     private Profile profile;
 
     public BlitzPlayer(Profile profile) {
-        this.uniqueId = profile.getId();
+        this.uniqueId = profile.getUuid();
         this.partyInvites = new HashMap<>();
         this.profile = profile;
     }
@@ -40,23 +39,23 @@ public class BlitzPlayer {
         return this.profile.getName();
     }
 
-    public static CompletableFuture<BlitzPlayer> getBlitzPlayer(UUID uniqueId) {
-        var player = PlayerManager.getCache().get(uniqueId);
-
-        if (player == null) {
-            player = new BlitzPlayer(uniqueId);
-
-            final var finalPlayer = player;
-
-            return PlayerManager.getProfile(uniqueId)
-                    .thenCompose(profile -> {
-                        finalPlayer.setProfile(profile);
-                        return CompletableFuture.completedFuture(finalPlayer);
-                    });
-        }
-
-        return CompletableFuture.completedFuture(player);
-    }
+//    public static CompletableFuture<BlitzPlayer> getBlitzPlayer(UUID uniqueId) {
+//        var player = PlayerManager.getCache().get(uniqueId);
+//
+//        if (player == null) {
+//            player = new BlitzPlayer(uniqueId);
+//
+//            final var finalPlayer = player;
+//
+//            return PlayerManager.getProfile(uniqueId)
+//                    .thenCompose(profile -> {
+//                        finalPlayer.setProfile(profile);
+//                        return CompletableFuture.completedFuture(finalPlayer);
+//                    });
+//        }
+//
+//        return CompletableFuture.completedFuture(player);
+//    }
 
     public Optional<PartyInvite> getPartyInvite(BlitzPlayer player) {
         return Optional.ofNullable(this.partyInvites.get(player));

@@ -1,94 +1,88 @@
 package cc.minetale.blitz.listeners.pigeon;
 
 import cc.minetale.blitz.Blitz;
-import cc.minetale.blitz.manager.PlayerManager;
-import cc.minetale.blitz.timers.GrantTimer;
 import cc.minetale.blitz.util.SoundsUtil;
-import cc.minetale.commonlib.api.*;
+import cc.minetale.commonlib.api.Grant;
+import cc.minetale.commonlib.api.Punishment;
+import cc.minetale.commonlib.api.Rank;
 import cc.minetale.commonlib.pigeon.payloads.grant.GrantAddPayload;
 import cc.minetale.commonlib.pigeon.payloads.grant.GrantRemovePayload;
 import cc.minetale.commonlib.pigeon.payloads.minecraft.MessagePlayerPayload;
-import cc.minetale.commonlib.pigeon.payloads.profile.ProfileRequestPayload;
-import cc.minetale.commonlib.pigeon.payloads.profile.ProfileUpdatePayload;
 import cc.minetale.commonlib.pigeon.payloads.punishment.PunishmentAddPayload;
 import cc.minetale.commonlib.util.MC;
 import cc.minetale.commonlib.util.TimeUtil;
-import cc.minetale.commonlib.util.timer.Timer;
 import cc.minetale.pigeon.annotations.PayloadHandler;
 import cc.minetale.pigeon.annotations.PayloadListener;
-import cc.minetale.pigeon.feedback.RequiredState;
 import cc.minetale.pigeon.listeners.Listener;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.JoinConfiguration;
 import net.kyori.adventure.text.format.NamedTextColor;
 
-import java.util.Collections;
-
 @PayloadListener
 public class PlayerListener implements Listener {
 
-    @PayloadHandler(requiredState = RequiredState.REQUEST)
-    public void onProfileRequest(ProfileRequestPayload payload) {
-        switch (payload.getType()) {
-            case SINGLE -> {
-                var uuid = payload.getId();
-                var name = payload.getName();
-
-                if (name != null && uuid != null) {
-                    PlayerManager.getProfile(uuid)
-                            .thenAccept(existingProfile -> {
-                                if (existingProfile != null) {
-                                    payload.sendResponse(new ProfileRequestPayload(
-                                            ProfileQueryResult.RETRIEVED,
-                                            Collections.singletonList(existingProfile)));
-                                    return;
-                                }
-
-                                var profile = Profile.createBlitzProfile(uuid, name);
-
-                                PlayerManager.createProfile(profile)
-                                        .thenAccept(result -> payload.sendResponse(new ProfileRequestPayload(
-                                                result,
-                                                Collections.singletonList(profile)
-                                        )));
-                            });
-                }
-
-                if (uuid != null) {
-                    PlayerManager.getProfile(payload.getId()).thenAccept(profile -> {
-                        if (profile != null) {
-                            payload.sendResponse(new ProfileRequestPayload(
-                                    ProfileQueryResult.RETRIEVED,
-                                    Collections.singletonList(profile)
-                            ));
-                        } else {
-                            payload.sendResponse(new ProfileRequestPayload(
-                                    ProfileQueryResult.NOT_FOUND,
-                                    Collections.emptyList()
-                            ));
-                        }
-                    });
-                    return;
-                }
-
-                if (name != null) {
-                    PlayerManager.getProfile(name)
-                            .thenAccept(profile -> {
-                                if (profile != null) {
-                                    payload.sendResponse(new ProfileRequestPayload(
-                                            ProfileQueryResult.RETRIEVED,
-                                            Collections.singletonList(profile)
-                                    ));
-                                } else {
-                                    payload.sendResponse(new ProfileRequestPayload(
-                                            ProfileQueryResult.NOT_FOUND,
-                                            Collections.emptyList()
-                                    ));
-                                }
-                            });
-                }
-            }
-
+//    @PayloadHandler(requiredState = RequiredState.REQUEST)
+//    public void onProfileRequest(ProfileRequestPayload payload) {
+//        switch (payload.getType()) {
+//            case SINGLE -> {
+//                var uuid = payload.getId();
+//                var name = payload.getName();
+//
+//                if (name != null && uuid != null) {
+//                    PlayerManager.getProfile(uuid)
+//                            .thenAccept(existingProfile -> {
+//                                if (existingProfile != null) {
+//                                    payload.sendResponse(new ProfileRequestPayload(
+//                                            ProfileQueryResult.RETRIEVED,
+//                                            Collections.singletonList(existingProfile)));
+//                                    return;
+//                                }
+//
+//                                var profile = Profile.createBlitzProfile(uuid, name);
+//
+//                                PlayerManager.createProfile(profile)
+//                                        .thenAccept(result -> payload.sendResponse(new ProfileRequestPayload(
+//                                                result,
+//                                                Collections.singletonList(profile)
+//                                        )));
+//                            });
+//                }
+//
+//                if (uuid != null) {
+//                    PlayerManager.getProfile(payload.getId()).thenAccept(profile -> {
+//                        if (profile != null) {
+//                            payload.sendResponse(new ProfileRequestPayload(
+//                                    ProfileQueryResult.RETRIEVED,
+//                                    Collections.singletonList(profile)
+//                            ));
+//                        } else {
+//                            payload.sendResponse(new ProfileRequestPayload(
+//                                    ProfileQueryResult.NOT_FOUND,
+//                                    Collections.emptyList()
+//                            ));
+//                        }
+//                    });
+//                    return;
+//                }
+//
+//                if (name != null) {
+//                    PlayerManager.getProfile(name)
+//                            .thenAccept(profile -> {
+//                                if (profile != null) {
+//                                    payload.sendResponse(new ProfileRequestPayload(
+//                                            ProfileQueryResult.RETRIEVED,
+//                                            Collections.singletonList(profile)
+//                                    ));
+//                                } else {
+//                                    payload.sendResponse(new ProfileRequestPayload(
+//                                            ProfileQueryResult.NOT_FOUND,
+//                                            Collections.emptyList()
+//                                    ));
+//                                }
+//                            });
+//                }
+//            }
+//
 //            case BULK -> {
 //                var names = payload.getNames();
 //                var uuids = payload.getIds();
@@ -171,21 +165,14 @@ public class PlayerListener implements Listener {
 //                    }
 //                }
 //            }
-        }
-    }
+//        }
+//    }
 
     @PayloadHandler
     public void onMessagePlayer(MessagePlayerPayload payload) {
         var player = Blitz.getBlitz().getServer().getPlayer(payload.getPlayer());
 
         player.ifPresent(value -> value.sendMessage(payload.getMessage()));
-    }
-
-    @PayloadHandler
-    public void onProfileUpdate(ProfileUpdatePayload payload) {
-        var profile = payload.getProfile();
-
-        PlayerManager.updateProfile(profile);
     }
 
     @PayloadHandler
@@ -211,7 +198,7 @@ public class PlayerListener implements Listener {
             player.sendMessage(MC.SEPARATOR_80);
 
             if (!grant.isPermanent()) {
-                PlayerManager.createTimers(player.getUniqueId());
+//                PlayerManager.createTimers(player.getUniqueId());
             }
         }
     }
@@ -238,7 +225,7 @@ public class PlayerListener implements Listener {
         }
 
         if(!grant.isPermanent()) {
-            GrantTimer.getTimer(grant.getId()).ifPresent(Timer::start);
+//            GrantTimer.getTimer(grant.getId()).ifPresent(Timer::start);
         }
     }
 
