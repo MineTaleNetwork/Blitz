@@ -1,9 +1,10 @@
 package cc.minetale.blitz.listeners.velocity;
 
 import cc.minetale.commonlib.CommonLib;
+import cc.minetale.commonlib.cache.ProfileCache;
+import cc.minetale.commonlib.grant.Grant;
 import cc.minetale.commonlib.profile.Profile;
-import cc.minetale.commonlib.profile.ProfileUtil;
-import cc.minetale.commonlib.util.UUIDCache;
+import cc.minetale.commonlib.punishment.Punishment;
 import com.google.common.hash.Hashing;
 import com.velocitypowered.api.event.EventTask;
 import com.velocitypowered.api.event.PostOrder;
@@ -31,8 +32,6 @@ public class PlayerEvents {
             try {
                 var profile = this.retrieveProfile(player.getUniqueId(), player.getUsername()).get(3, TimeUnit.SECONDS);
 
-                System.out.println(CommonLib.getGson().toJson(profile));
-
                 if(profile == null) {
                     player.disconnect(Component.text("Failed to load your profile. Try again later.", NamedTextColor.RED));
                     return;
@@ -40,8 +39,13 @@ public class PlayerEvents {
 
                 profile.setName(player.getUsername());
 
+                var punishments = Punishment.getPunishments(profile).get(3, TimeUnit.SECONDS);
+                profile.setPunishments(punishments);
+
                 if (profile.getFirstSeen() == 0L)
                     profile.setFirstSeen(System.currentTimeMillis());
+
+                profile.checkPunishments();
 
                 var punishment = profile.getActiveBan();
 
@@ -53,6 +57,10 @@ public class PlayerEvents {
 
                     return;
                 }
+
+                var grants = Grant.getGrants(profile).get(3, TimeUnit.SECONDS);
+                System.out.println(CommonLib.getGson().toJson(grants));
+                profile.setGrants(grants);
 
                 profile.setLastSeen(System.currentTimeMillis());
 
@@ -76,8 +84,7 @@ public class PlayerEvents {
                     profile.setCurrentAddress(hashedIP);
                 }
 
-                UUIDCache.updateCache(player.getUsername(), player.getUniqueId());
-                ProfileUtil.updateCache(profile);
+                ProfileCache.updateCache(profile);
             } catch (InterruptedException | ExecutionException | TimeoutException e) {
                 e.printStackTrace();
                 player.disconnect(Component.text("Failed to load your profile. Try again later.", NamedTextColor.RED));
@@ -89,17 +96,9 @@ public class PlayerEvents {
         return new CompletableFuture<Profile>()
                 .completeAsync(() -> {
                     try {
-                        var cachedProfile = ProfileUtil.getFromCache(uuid).get();
-
-                        if(cachedProfile != null) {
-                            System.out.println("Profile was Cached!");
-                            return cachedProfile;
-                        }
-
-                        var databaseProfile = ProfileUtil.getFromDatabase(uuid).get();
+                        var databaseProfile = ProfileCache.getFromDatabase(uuid).get();
 
                         if(databaseProfile != null) {
-                            System.out.println("Retrieved from Database!");
                             return databaseProfile;
                         }
                     } catch (InterruptedException | ExecutionException e) {
@@ -112,8 +111,6 @@ public class PlayerEvents {
                     profile.setUuid(uuid);
                     profile.setName(name);
                     profile.setSearch(name.toUpperCase());
-
-                    System.out.println("Created a new Profile!");
 
                     return profile;
                 });

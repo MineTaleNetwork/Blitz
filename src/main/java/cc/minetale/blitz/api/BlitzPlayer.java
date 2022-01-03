@@ -13,7 +13,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.CompletableFuture;
 
 @Getter @Setter
 public class BlitzPlayer {
@@ -70,7 +69,7 @@ public class BlitzPlayer {
     }
 
     public Optional<Player> getProxyPlayer() {
-        return Blitz.getBlitz().getServer().getPlayer(this.uniqueId);
+        return Blitz.getBlitz().getProxyServer().getPlayer(this.uniqueId);
     }
 
     public boolean isOnline() {

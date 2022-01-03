@@ -18,9 +18,9 @@ dependencies {
     compileOnly         group: 'org.projectlombok', name: 'lombok', version: '1.18.22'
     annotationProcessor group: 'org.projectlombok', name: 'lombok', version: '1.18.22'
 
-    compileOnly     group: 'com.velocitypowered', name: 'velocity-api', version: '3.0.1'
-    implementation  group: 'cc.minetale',         name: 'CommonLib',    version: 'LATEST'
-    implementation  group: 'org.ehcache',         name: 'ehcache',      version: '3.9.7'
+    compileOnly     group: 'com.velocitypowered', name: 'velocity-api',  version: '3.0.1'
+    implementation  group: 'cc.minetale',         name: 'CommonLib',     version: 'LATEST'
+    implementation  group: 'org.ehcache',         name: 'ehcache',       version: '3.9.7'
 }
 
 sourceCompatibility = 17
