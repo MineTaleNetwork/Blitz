@@ -2,7 +2,7 @@ package cc.minetale.blitz.api;
 
 import cc.minetale.blitz.Blitz;
 import cc.minetale.commonlib.profile.Profile;
-import cc.minetale.commonlib.util.MC;
+import cc.minetale.commonlib.util.Message;
 import com.velocitypowered.api.proxy.Player;
 import lombok.Getter;
 import lombok.Setter;
@@ -35,7 +35,7 @@ public class BlitzPlayer {
     }
 
     public String getName() {
-        return this.profile.getName();
+        return this.profile.getUsername();
     }
 
 //    public static CompletableFuture<BlitzPlayer> getBlitzPlayer(UUID uniqueId) {
@@ -61,7 +61,7 @@ public class BlitzPlayer {
     }
 
     public void sendNotification(String prefix, Component message) {
-        this.sendMessage(MC.notificationMessage(prefix, message));
+        this.sendMessage(Message.notification(prefix, message));
     }
 
     public void sendMessage(@NotNull Component message) {

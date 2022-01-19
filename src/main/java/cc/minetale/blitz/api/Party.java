@@ -1,6 +1,7 @@
 package cc.minetale.blitz.api;
 
-import cc.minetale.commonlib.util.MC;
+import cc.minetale.commonlib.util.Colors;
+import cc.minetale.commonlib.util.Message;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
@@ -73,7 +74,7 @@ public class Party {
                 Component.text().append(
                         profile.getChatFormat(),
                         Component.text(" » ", NamedTextColor.DARK_GRAY),
-                        Component.text(message, MC.toTextColor(MC.bleach(MC.fromNamedTextColor(color), 0.80)))
+                        Component.text(message, Colors.bleach(color, 0.80))
                 ).build());
     }
 
