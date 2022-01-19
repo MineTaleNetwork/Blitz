@@ -2,10 +2,11 @@ package cc.minetale.blitz.api;
 
 import cc.minetale.blitz.Blitz;
 import cc.minetale.commonlib.profile.Profile;
-import cc.minetale.commonlib.util.MC;
+import cc.minetale.commonlib.util.Message;
 import com.velocitypowered.api.proxy.Player;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.experimental.Delegate;
 import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;
 
@@ -34,10 +35,6 @@ public class BlitzPlayer {
         this.partyInvites = new HashMap<>();
     }
 
-    public String getName() {
-        return this.profile.getName();
-    }
-
 //    public static CompletableFuture<BlitzPlayer> getBlitzPlayer(UUID uniqueId) {
 //        var player = PlayerManager.getCache().get(uniqueId);
 //
@@ -61,7 +58,7 @@ public class BlitzPlayer {
     }
 
     public void sendNotification(String prefix, Component message) {
-        this.sendMessage(MC.notificationMessage(prefix, message));
+        this.sendMessage(Message.notification(prefix, message));
     }
 
     public void sendMessage(@NotNull Component message) {

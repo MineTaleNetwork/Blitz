@@ -3,8 +3,11 @@ package cc.minetale.blitz.listeners.velocity;
 import cc.minetale.commonlib.CommonLib;
 import cc.minetale.commonlib.cache.ProfileCache;
 import cc.minetale.commonlib.grant.Grant;
+import cc.minetale.commonlib.profile.CachedProfile;
 import cc.minetale.commonlib.profile.Profile;
 import cc.minetale.commonlib.punishment.Punishment;
+import cc.minetale.commonlib.punishment.PunishmentType;
+import cc.minetale.commonlib.util.ProfileUtil;
 import com.google.common.hash.Hashing;
 import com.velocitypowered.api.event.EventTask;
 import com.velocitypowered.api.event.PostOrder;
@@ -27,27 +30,28 @@ public class PlayerEvents {
     @Subscribe(order = PostOrder.FIRST)
     public EventTask onPlayerLogin(LoginEvent event) {
         return EventTask.async(() -> {
-            var player = event.getPlayer();
+            final var player = event.getPlayer();
+            final var uuid = player.getUniqueId();
 
             try {
-                var profile = this.retrieveProfile(player.getUniqueId(), player.getUsername()).get(3, TimeUnit.SECONDS);
+                var profile = ProfileUtil.retrieveProfile(uuid, player.getUsername()).get(5, TimeUnit.SECONDS);
 
                 if(profile == null) {
                     player.disconnect(Component.text("Failed to load your profile. Try again later.", NamedTextColor.RED));
                     return;
                 }
 
-                profile.setName(player.getUsername());
+                profile.setUsername(player.getUsername());
 
-                var punishments = Punishment.getPunishments(profile).get(3, TimeUnit.SECONDS);
+                var punishments = Punishment.getPunishments(uuid).get(3, TimeUnit.SECONDS);
                 profile.setPunishments(punishments);
 
                 if (profile.getFirstSeen() == 0L)
                     profile.setFirstSeen(System.currentTimeMillis());
 
-                profile.checkPunishments();
+                profile.expirePunishments();
 
-                var punishment = profile.getActiveBan();
+                var punishment = profile.getActivePunishmentByType(PunishmentType.BAN);
 
                 if (punishment != null) {
                     player.disconnect(Component.join(
@@ -58,8 +62,7 @@ public class PlayerEvents {
                     return;
                 }
 
-                var grants = Grant.getGrants(profile).get(3, TimeUnit.SECONDS);
-                System.out.println(CommonLib.getGson().toJson(grants));
+                var grants = Grant.getGrants(uuid).get(3, TimeUnit.SECONDS);
                 profile.setGrants(grants);
 
                 profile.setLastSeen(System.currentTimeMillis());
@@ -84,36 +87,12 @@ public class PlayerEvents {
                     profile.setCurrentAddress(hashedIP);
                 }
 
-                ProfileCache.updateCache(profile);
+                ProfileCache.writeCachedProfile(new CachedProfile(profile));
             } catch (InterruptedException | ExecutionException | TimeoutException e) {
                 e.printStackTrace();
                 player.disconnect(Component.text("Failed to load your profile. Try again later.", NamedTextColor.RED));
             }
         });
-    }
-
-    private CompletableFuture<@Nullable Profile> retrieveProfile(UUID uuid, String name) {
-        return new CompletableFuture<Profile>()
-                .completeAsync(() -> {
-                    try {
-                        var databaseProfile = ProfileCache.getFromDatabase(uuid).get();
-
-                        if(databaseProfile != null) {
-                            return databaseProfile;
-                        }
-                    } catch (InterruptedException | ExecutionException e) {
-                        e.printStackTrace();
-                        return null;
-                    }
-
-                    var profile = new Profile();
-
-                    profile.setUuid(uuid);
-                    profile.setName(name);
-                    profile.setSearch(name.toUpperCase());
-
-                    return profile;
-                });
     }
 
 //    @Subscribe
