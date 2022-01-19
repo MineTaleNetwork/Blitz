@@ -26,7 +26,7 @@ public class PlayerEvents {
     @Subscribe(order = PostOrder.FIRST)
     public EventTask onPlayerLogin(LoginEvent event) {
         return EventTask.async(() -> {
-            var player = event.getPlayer();
+            final var player = event.getPlayer();
 
             try {
                 var profile = ProfileUtil.retrieveProfile(player.getUniqueId(), player.getUsername()).get(3, TimeUnit.SECONDS);

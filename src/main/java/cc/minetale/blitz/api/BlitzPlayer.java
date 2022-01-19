@@ -6,6 +6,7 @@ import cc.minetale.commonlib.util.Message;
 import com.velocitypowered.api.proxy.Player;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.experimental.Delegate;
 import net.kyori.adventure.text.Component;
 import org.jetbrains.annotations.NotNull;
 

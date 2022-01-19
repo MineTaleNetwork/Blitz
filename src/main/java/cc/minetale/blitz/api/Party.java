@@ -1,7 +1,6 @@
 package cc.minetale.blitz.api;
 
 import cc.minetale.commonlib.util.Colors;
-import cc.minetale.commonlib.util.Message;
 import com.velocitypowered.api.proxy.server.RegisteredServer;
 import lombok.Getter;
 import net.kyori.adventure.text.Component;
