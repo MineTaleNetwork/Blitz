@@ -11,16 +11,19 @@ version 'LATEST'
 repositories {
     mavenLocal()
     mavenCentral()
-    maven { url 'https://repo.velocitypowered.com/snapshots/' }
+    maven { url 'https://maven.elytrium.net/repo/' }
+    maven { url 'https://papermc.io/repo/repository/maven-public/' }
 }
 
 dependencies {
     compileOnly         group: 'org.projectlombok', name: 'lombok', version: '1.18.22'
     annotationProcessor group: 'org.projectlombok', name: 'lombok', version: '1.18.22'
 
-    compileOnly     group: 'com.velocitypowered', name: 'velocity-api',  version: '3.0.1'
-    implementation  group: 'cc.minetale',         name: 'CommonLib',     version: 'LATEST'
-    implementation  group: 'org.ehcache',         name: 'ehcache',       version: '3.9.7'
+    compileOnly("com.velocitypowered:velocity-api:3.1.2-SNAPSHOT")
+    compileOnly("com.velocitypowered:velocity-proxy:3.1.2-SNAPSHOT")
+    compileOnly("io.netty:netty-codec:4.1.73.Final")
+    compileOnly("net.elytrium:limboapi-api:1.0.3")
+    implementation("cc.minetale:CommonLib:LATEST")
 }
 
 sourceCompatibility = 17
