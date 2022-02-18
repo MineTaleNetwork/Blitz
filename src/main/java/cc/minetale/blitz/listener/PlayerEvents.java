@@ -100,6 +100,10 @@ public class PlayerEvents {
                         profile.setCurrentAddress(hashedIP);
                     }
 
+                    if(profile.getGrant().getRank().isStaff()) {
+                        Blitz.getStaff().put(player.getUniqueId(), player);
+                    }
+
                     profile.save().get();
                     ProfileCache.updateProfile(profile).get();
                     return;
@@ -128,7 +132,7 @@ public class PlayerEvents {
 
                     if(oPreviousServer.isEmpty()) {
                         PigeonUtil.broadcast(new ProxyPlayerConnectPayload(profile, currentServer));
-                        PigeonHandler.proxyPlayerConnect(profile);
+                        PigeonHandler.proxyPlayerConnect(profile, currentServer);
                     } else {
                         // TODO -> Server Switch & Staff Messages
                     }

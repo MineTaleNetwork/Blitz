@@ -8,6 +8,7 @@ import com.google.inject.Inject;
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.proxy.ProxyInitializeEvent;
 import com.velocitypowered.api.plugin.PluginContainer;
+import com.velocitypowered.api.proxy.Player;
 import com.velocitypowered.api.proxy.ProxyServer;
 import lombok.Getter;
 import net.elytrium.limboapi.api.Limbo;
@@ -15,9 +16,13 @@ import net.elytrium.limboapi.api.LimboFactory;
 import net.elytrium.limboapi.api.chunk.Dimension;
 
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.UUID;
 
 @Getter
 public class Blitz {
+
+    @Getter private static final HashMap<UUID, Player> staff = new HashMap<>();
 
     @Getter private static Blitz blitz;
     private final ProxyServer server;
@@ -43,21 +48,6 @@ public class Blitz {
         Arrays.asList(
                 new PlayerEvents()
         ).forEach(proxyEvent -> server.getEventManager().register(this, proxyEvent));
-
-//        server.getScheduler()
-//                .buildTask(this, () -> CompletableFuture.runAsync(() -> Redis.runRedisCommand(jedis -> {
-//                    var pipeline = jedis.pipelined();
-//
-//                    for(var player : server.getAllPlayers()) {
-//                        pipeline.expire(Cache.getProfileCache().getKey(player.getUniqueId().toString()), TimeUnit.HOURS.toSeconds(12));
-//                    }
-//
-//                    pipeline.sync();
-//
-//                    return null;
-//                })))
-//                .repeat(120L, TimeUnit.MINUTES)
-//                .schedule();
     }
 
 }

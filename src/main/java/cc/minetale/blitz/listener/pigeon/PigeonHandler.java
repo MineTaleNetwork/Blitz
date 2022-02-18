@@ -7,8 +7,7 @@ import cc.minetale.commonlib.util.Message;
 
 public class PigeonHandler {
 
-    // TODO -> Send staff messages
-    public static void proxyPlayerConnect(Profile profile) {
+    public static void proxyPlayerConnect(Profile profile, String serverName) {
         var server = Blitz.getBlitz().getServer();
 
         if(profile.getFriends().size() == 0) { return; }
@@ -19,6 +18,10 @@ public class PigeonHandler {
             if(oPlayer.isEmpty()) { continue; }
 
             oPlayer.get().sendMessage(Message.parse(Language.Friend.JOINED_NETWORK, profile.getChatFormat()));
+
+            for(var staff : Blitz.getStaff().values()) {
+                staff.sendMessage(Message.parse(Language.Staff.STAFF_JOIN, profile.getChatFormat(), serverName));
+            }
         }
     }
 
