@@ -1,10 +1,9 @@
 package cc.minetale.blitz;
 
+import cc.minetale.blitz.listener.pigeon.PigeonListener;
 import cc.minetale.blitz.listener.PlayerEvents;
 import cc.minetale.commonlib.CommonLib;
-import cc.minetale.commonlib.cache.ProfileCache;
-import cc.minetale.commonlib.util.Cache;
-import cc.minetale.commonlib.util.Redis;
+import cc.minetale.pigeon.Pigeon;
 import com.google.inject.Inject;
 import com.velocitypowered.api.event.Subscribe;
 import com.velocitypowered.api.event.proxy.ProxyInitializeEvent;
@@ -16,8 +15,6 @@ import net.elytrium.limboapi.api.LimboFactory;
 import net.elytrium.limboapi.api.chunk.Dimension;
 
 import java.util.Arrays;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
 
 @Getter
 public class Blitz {
@@ -37,6 +34,9 @@ public class Blitz {
     public void onInitialize(ProxyInitializeEvent event) {
         CommonLib.init();
 
+        Pigeon.getPigeon().getListenersRegistry()
+                .registerListener(new PigeonListener());
+
         var factory = (LimboFactory) server.getPluginManager().getPlugin("limboapi").flatMap(PluginContainer::getInstance).orElseThrow();
         this.limbo = factory.createLimbo(factory.createVirtualWorld(Dimension.THE_END, 0, 0, 0, 0, 0)).setName("Limbo");
 
@@ -44,20 +44,20 @@ public class Blitz {
                 new PlayerEvents()
         ).forEach(proxyEvent -> server.getEventManager().register(this, proxyEvent));
 
-        server.getScheduler()
-                .buildTask(this, () -> CompletableFuture.runAsync(() -> Redis.runRedisCommand(jedis -> {
-                    var pipeline = jedis.pipelined();
-
-                    for(var player : server.getAllPlayers()) {
-                        pipeline.expire(Cache.getProfileCache().getKey(player.getUniqueId().toString()), TimeUnit.HOURS.toSeconds(12));
-                    }
-
-                    pipeline.sync();
-
-                    return null;
-                })))
-                .repeat(120L, TimeUnit.MINUTES)
-                .schedule();
+//        server.getScheduler()
+//                .buildTask(this, () -> CompletableFuture.runAsync(() -> Redis.runRedisCommand(jedis -> {
+//                    var pipeline = jedis.pipelined();
+//
+//                    for(var player : server.getAllPlayers()) {
+//                        pipeline.expire(Cache.getProfileCache().getKey(player.getUniqueId().toString()), TimeUnit.HOURS.toSeconds(12));
+//                    }
+//
+//                    pipeline.sync();
+//
+//                    return null;
+//                })))
+//                .repeat(120L, TimeUnit.MINUTES)
+//                .schedule();
     }
 
 }
