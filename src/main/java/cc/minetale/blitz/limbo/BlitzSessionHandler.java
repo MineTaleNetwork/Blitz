@@ -24,7 +24,6 @@ public record BlitzSessionHandler(Player player) implements LimboSessionHandler 
         player.disableFalling();
         player.setGameMode(GameMode.SPECTATOR);
 
-
         player.writePacket(Constants.BRAND_PACKET);
         player.writePacket(Constants.PLAYER_TAB_PACKET);
         player.flushPackets();

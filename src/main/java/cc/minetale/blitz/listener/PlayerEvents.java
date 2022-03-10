@@ -1,11 +1,14 @@
 package cc.minetale.blitz.listener;
 
 import cc.minetale.blitz.Blitz;
+import cc.minetale.blitz.Staff;
 import cc.minetale.blitz.limbo.BlitzSessionHandler;
 import cc.minetale.blitz.listener.pigeon.PigeonHandler;
 import cc.minetale.commonlib.cache.ProfileCache;
 import cc.minetale.commonlib.lang.Language;
 import cc.minetale.commonlib.pigeon.payloads.network.ProxyPlayerConnectPayload;
+import cc.minetale.commonlib.pigeon.payloads.network.ProxyPlayerDisconnectPayload;
+import cc.minetale.commonlib.pigeon.payloads.network.ProxyPlayerSwitchPayload;
 import cc.minetale.commonlib.punishment.PunishmentType;
 import cc.minetale.commonlib.util.Message;
 import cc.minetale.commonlib.util.PigeonUtil;
@@ -15,14 +18,11 @@ import com.velocitypowered.api.event.EventTask;
 import com.velocitypowered.api.event.PostOrder;
 import com.velocitypowered.api.event.ResultedEvent;
 import com.velocitypowered.api.event.Subscribe;
+import com.velocitypowered.api.event.connection.DisconnectEvent;
 import com.velocitypowered.api.event.connection.LoginEvent;
-import com.velocitypowered.api.event.player.KickedFromServerEvent;
 import com.velocitypowered.api.event.player.ServerConnectedEvent;
-import net.elytrium.limboapi.api.event.LoginLimboRegisterEvent;
 import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.JoinConfiguration;
-import net.kyori.adventure.text.TextComponent;
-import net.kyori.adventure.text.format.NamedTextColor;
 
 import java.nio.charset.StandardCharsets;
 import java.util.concurrent.ExecutionException;
@@ -100,8 +100,8 @@ public class PlayerEvents {
                         profile.setCurrentAddress(hashedIP);
                     }
 
-                    if(profile.getGrant().getRank().isStaff()) {
-                        Blitz.getStaff().put(player.getUniqueId(), player);
+                    if(profile.isStaff()) {
+                        Staff.putStaff(player);
                     }
 
                     profile.save().get();
@@ -134,28 +134,34 @@ public class PlayerEvents {
                         PigeonUtil.broadcast(new ProxyPlayerConnectPayload(profile, currentServer));
                         PigeonHandler.proxyPlayerConnect(profile, currentServer);
                     } else {
-                        // TODO -> Server Switch & Staff Messages
+                        var previousServer = oPreviousServer.get().getServerInfo().getName();
+
+                        PigeonUtil.broadcast(new ProxyPlayerSwitchPayload(profile, currentServer, previousServer));
+                        PigeonHandler.proxyPlayerSwitch(profile, currentServer, previousServer);
                     }
                 });
     }
 
-//
-//    @Subscribe
-//    public void onPlayerDisconnect(DisconnectEvent event) {
-//        var playerUuid = event.getPlayer().getUniqueId();
-//
-//        if (event.getLoginStatus() != DisconnectEvent.LoginStatus.SUCCESSFUL_LOGIN) return;
-//
-//        ProfileCache.updateStatus(playerUuid, null);
-//
-//        ProfileUtil.getCachedProfile(playerUuid)
-//                .thenAccept(cachedProfile -> {
-//                    var profile = cachedProfile.getProfile();
-//
-//                    if(profile.getFriends().size() != 0) {
-//                        PigeonUtil.broadcast(new FriendLeftPayload(playerUuid));
-//                    }
-//                });
-//    }
+    @Subscribe
+    public void onPlayerDisconnect(DisconnectEvent event) {
+        var playerUuid = event.getPlayer().getUniqueId();
+
+        if (event.getLoginStatus() != DisconnectEvent.LoginStatus.SUCCESSFUL_LOGIN) return;
+
+        ProfileCache.updateStatus(playerUuid, null);
+
+        ProfileUtil.getCachedProfile(playerUuid)
+                .thenAccept(cachedProfile -> {
+                    var profile = cachedProfile.getProfile();
+                    var oCurrentServer = event.getPlayer().getCurrentServer();
+
+                    if(oCurrentServer.isPresent()) {
+                        var currentServer = oCurrentServer.get().getServerInfo().getName();
+
+                        PigeonUtil.broadcast(new ProxyPlayerDisconnectPayload(profile, currentServer));
+                        PigeonHandler.proxyPlayerDisconnect(profile, currentServer);
+                    }
+                });
+    }
 
 }
