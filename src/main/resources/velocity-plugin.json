@@ -4,6 +4,5 @@
   "version": "LATEST",
   "description": "Backend proxy plugin for Velocity",
   "authors": ["oHate", "BitCrack"],
-  "dependencies": [{"id":"limboapi","optional":false}],
   "main": "cc.minetale.blitz.Blitz"
 }

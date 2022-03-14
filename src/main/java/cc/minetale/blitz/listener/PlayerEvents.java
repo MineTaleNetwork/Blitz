@@ -1,8 +1,6 @@
 package cc.minetale.blitz.listener;
 
-import cc.minetale.blitz.Blitz;
 import cc.minetale.blitz.Staff;
-import cc.minetale.blitz.limbo.BlitzSessionHandler;
 import cc.minetale.blitz.listener.pigeon.PigeonHandler;
 import cc.minetale.commonlib.cache.ProfileCache;
 import cc.minetale.commonlib.lang.Language;
@@ -94,7 +92,7 @@ public class PlayerEvents {
                     if (!profile.getCurrentAddress().equals(hashedIP)) {
                         if (!staff.getTwoFactorKey().isEmpty() && !staff.isLocked()) {
                             staff.setLocked(true);
-                            Blitz.getBlitz().getLimbo().spawnPlayer(player, new BlitzSessionHandler(player)); // TODO -> MAKE SURE THIS WORKS
+                            // TODO -> Send to limbo
                         }
 
                         profile.setCurrentAddress(hashedIP);

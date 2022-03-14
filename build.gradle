@@ -11,7 +11,6 @@ version 'LATEST'
 repositories {
     mavenLocal()
     mavenCentral()
-    maven { url 'https://maven.elytrium.net/repo/' }
     maven { url 'https://papermc.io/repo/repository/maven-public/' }
 }
 
@@ -20,9 +19,6 @@ dependencies {
     annotationProcessor("org.projectlombok:lombok:1.18.22")
 
     compileOnly("com.velocitypowered:velocity-api:3.1.2-SNAPSHOT")
-    compileOnly("com.velocitypowered:velocity-proxy:3.1.2-SNAPSHOT")
-    compileOnly("io.netty:netty-codec:4.1.73.Final")
-    compileOnly("net.elytrium:limboapi-api:1.0.3")
     implementation("cc.minetale:CommonLib:LATEST")
 }
 
