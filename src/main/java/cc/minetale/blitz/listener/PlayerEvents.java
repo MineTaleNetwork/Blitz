@@ -1,16 +1,17 @@
 package cc.minetale.blitz.listener;
 
 import cc.minetale.blitz.Staff;
-import cc.minetale.blitz.listener.pigeon.PigeonHandler;
-import cc.minetale.commonlib.cache.ProfileCache;
-import cc.minetale.commonlib.lang.Language;
-import cc.minetale.commonlib.pigeon.payloads.network.ProxyPlayerConnectPayload;
-import cc.minetale.commonlib.pigeon.payloads.network.ProxyPlayerDisconnectPayload;
-import cc.minetale.commonlib.pigeon.payloads.network.ProxyPlayerSwitchPayload;
-import cc.minetale.commonlib.punishment.PunishmentType;
-import cc.minetale.commonlib.util.Message;
-import cc.minetale.commonlib.util.PigeonUtil;
-import cc.minetale.commonlib.util.ProfileUtil;
+import cc.minetale.postman.Postman;
+import cc.minetale.sodium.cache.ProfileCache;
+import cc.minetale.sodium.lang.Language;
+import cc.minetale.sodium.payloads.proxy.ProxyPlayerConnectPayload;
+import cc.minetale.sodium.payloads.proxy.ProxyPlayerDisconnectPayload;
+import cc.minetale.sodium.payloads.proxy.ProxyPlayerSwitchPayload;
+import cc.minetale.sodium.profile.Profile;
+import cc.minetale.sodium.profile.ProfileUtil;
+import cc.minetale.sodium.profile.punishment.PunishmentType;
+import cc.minetale.sodium.util.Message;
+import cc.minetale.sodium.util.MongoUtil;
 import com.google.common.hash.Hashing;
 import com.velocitypowered.api.event.EventTask;
 import com.velocitypowered.api.event.PostOrder;
@@ -23,37 +24,15 @@ import net.kyori.adventure.text.Component;
 import net.kyori.adventure.text.JoinConfiguration;
 
 import java.nio.charset.StandardCharsets;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 public class PlayerEvents {
 
-//    @Subscribe(order = PostOrder.FIRST)
-//    public void onPlayerKicked(KickedFromServerEvent event) {
-//        var player = event.getPlayer();
-//        var limbo = Blitz.getBlitz().getLimbo();
-//
-//        var reasonOptional = event.getServerKickReason();
-//
-//        if(reasonOptional.isPresent()) {
-//            var reason = ((TextComponent) reasonOptional.get()).content();
-//
-//            if(reason.equalsIgnoreCase("limbo")) {
-//                player.sendMessage(Component.text("You have been sent to limbo.", NamedTextColor.RED));
-//                limbo.spawnPlayer(player, new BlitzSessionHandler(player));
-//            }
-//        }
-//    }
-
-    // TODO -> VALIDATE LIMBO WORKS
     @Subscribe(order = PostOrder.FIRST)
     public EventTask onPlayerLogin(LoginEvent event) {
         return EventTask.async(() -> {
             var player = event.getPlayer();
 
-            try {
-                var profile = ProfileUtil.retrieveProfile(player.getUniqueId(), player.getUsername()).get(3, TimeUnit.SECONDS);
+                var profile = ProfileUtil.retrieveProfile(player.getUniqueId(), player.getUsername());
 
                 if(profile != null) {
                     profile.setUsername(player.getUsername());
@@ -66,11 +45,7 @@ public class PlayerEvents {
                     var punishment = profile.getActivePunishmentByType(PunishmentType.BAN);
 
                     if (punishment != null) {
-                        player.disconnect(Component.join(
-                                JoinConfiguration.separator(Component.newline()),
-                                punishment.getPunishmentMessage()
-                        ));
-
+                        player.disconnect(Component.join(JoinConfiguration.newlines(), punishment.getPunishmentMessage()));
                         return;
                     }
 
@@ -92,23 +67,21 @@ public class PlayerEvents {
                     if (!profile.getCurrentAddress().equals(hashedIP)) {
                         if (!staff.getTwoFactorKey().isEmpty() && !staff.isLocked()) {
                             staff.setLocked(true);
-                            // TODO -> Send to limbo
                         }
 
                         profile.setCurrentAddress(hashedIP);
                     }
 
+                    profile.activateNextGrant();
+
                     if(profile.isStaff()) {
                         Staff.putStaff(player);
                     }
 
-                    profile.save().get();
-                    ProfileCache.updateProfile(profile).get();
+                    MongoUtil.saveDocument(Profile.getCollection(), profile.getUuid(), profile);
+                    ProfileCache.updateProfile(profile);
                     return;
                 }
-            } catch (InterruptedException | ExecutionException | TimeoutException e) {
-                e.printStackTrace();
-            }
 
             event.setResult(ResultedEvent.ComponentResult.denied(Message.parse(Language.Error.PROFILE_LOAD)));
         });
@@ -120,24 +93,24 @@ public class PlayerEvents {
         var currentServer = event.getServer().getServerInfo().getName();
         var oPreviousServer = event.getPreviousServer();
 
-        ProfileUtil.getCachedProfile(playerUuid)
-                .thenAccept(cachedProfile -> {
-                    if(cachedProfile == null) { return; }
+        var redisProfile = ProfileUtil.fromCache(playerUuid);
 
-                    var profile = cachedProfile.getProfile();
+        if(redisProfile == null) { return; }
 
-                    ProfileCache.updateStatus(playerUuid, currentServer);
+        var profile = redisProfile.getProfile();
+        var postman = Postman.getPostman();
 
-                    if(oPreviousServer.isEmpty()) {
-                        PigeonUtil.broadcast(new ProxyPlayerConnectPayload(profile, currentServer));
-                        PigeonHandler.proxyPlayerConnect(profile, currentServer);
-                    } else {
-                        var previousServer = oPreviousServer.get().getServerInfo().getName();
+        ProfileCache.updateStatus(playerUuid, currentServer);
 
-                        PigeonUtil.broadcast(new ProxyPlayerSwitchPayload(profile, currentServer, previousServer));
-                        PigeonHandler.proxyPlayerSwitch(profile, currentServer, previousServer);
-                    }
-                });
+        if(oPreviousServer.isEmpty()) {
+            postman.sendTo("proxy", new ProxyPlayerConnectPayload(profile, currentServer));
+            ProxyHandler.proxyPlayerConnect(profile, currentServer);
+        } else {
+            var previousServer = oPreviousServer.get().getServerInfo().getName();
+
+            postman.sendTo("proxy", new ProxyPlayerSwitchPayload(profile, currentServer, previousServer));
+            ProxyHandler.proxyPlayerSwitch(profile, currentServer, previousServer);
+        }
     }
 
     @Subscribe
@@ -146,20 +119,23 @@ public class PlayerEvents {
 
         if (event.getLoginStatus() != DisconnectEvent.LoginStatus.SUCCESSFUL_LOGIN) return;
 
+        var redisProfile = ProfileUtil.fromCache(playerUuid);
+
+        if(redisProfile == null) { return; }
+
+        var profile = redisProfile.getProfile();
+        var postman = Postman.getPostman();
+
         ProfileCache.updateStatus(playerUuid, null);
 
-        ProfileUtil.getCachedProfile(playerUuid)
-                .thenAccept(cachedProfile -> {
-                    var profile = cachedProfile.getProfile();
-                    var oCurrentServer = event.getPlayer().getCurrentServer();
+        var oCurrentServer = event.getPlayer().getCurrentServer();
 
-                    if(oCurrentServer.isPresent()) {
-                        var currentServer = oCurrentServer.get().getServerInfo().getName();
+        if(oCurrentServer.isPresent()) {
+            var currentServer = oCurrentServer.get().getServerInfo().getName();
 
-                        PigeonUtil.broadcast(new ProxyPlayerDisconnectPayload(profile, currentServer));
-                        PigeonHandler.proxyPlayerDisconnect(profile, currentServer);
-                    }
-                });
+            postman.sendTo("proxy", new ProxyPlayerDisconnectPayload(profile, currentServer));
+            ProxyHandler.proxyPlayerDisconnect(profile, currentServer);
+        }
     }
 
 }

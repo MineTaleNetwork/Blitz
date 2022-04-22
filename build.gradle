@@ -19,7 +19,7 @@ dependencies {
     annotationProcessor("org.projectlombok:lombok:1.18.22")
 
     compileOnly("com.velocitypowered:velocity-api:3.1.2-SNAPSHOT")
-    implementation("cc.minetale:CommonLib:LATEST")
+    implementation("cc.minetale:Sodium:LATEST")
 }
 
 sourceCompatibility = 17
