@@ -15,35 +15,42 @@ repositories {
 }
 
 dependencies {
-    compileOnly("org.projectlombok:lombok:1.18.22")
-    annotationProcessor("org.projectlombok:lombok:1.18.22")
+    compileOnly("org.projectlombok:lombok:1.18.24")
+    annotationProcessor("org.projectlombok:lombok:1.18.24")
 
     compileOnly("com.velocitypowered:velocity-api:3.1.2-SNAPSHOT")
     implementation("cc.minetale:Sodium:LATEST")
 }
 
-sourceCompatibility = 17
-targetCompatibility = 17
+compileJava.options.encoding('UTF-8')
+javadoc.options.encoding('UTF-8')
+
+idea {
+    module {
+        downloadJavadoc = true
+        downloadSources = true
+    }
+}
+
+shadowJar {
+    archiveClassifier.set(null)
+}
+
+setSourceCompatibility(JavaVersion.VERSION_17)
+setTargetCompatibility(JavaVersion.VERSION_17)
 
 java {
     withJavadocJar()
     withSourcesJar()
 }
 
-shadowJar {
-    classifier = null
-}
+shadowJar.finalizedBy(javadocJar, sourcesJar)
 
 publishing {
     publications {
         shadow(MavenPublication) { publication ->
             project.shadow.component(publication)
+            artifacts = [ shadowJar, javadocJar, sourcesJar ]
         }
     }
 }
-
-tasks.withType(Jar) {
-    destinationDirectory = file("../../Build")
-}
-
-task buildJar(dependsOn: ['publishToMavenLocal'])

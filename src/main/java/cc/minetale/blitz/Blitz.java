@@ -1,6 +1,8 @@
 package cc.minetale.blitz;
 
 import cc.minetale.blitz.listener.PlayerEvents;
+import cc.minetale.blitz.listener.pigeon.GenericListener;
+import cc.minetale.postman.Postman;
 import cc.minetale.sodium.Sodium;
 import com.google.inject.Inject;
 import com.velocitypowered.api.event.Subscribe;
@@ -27,11 +29,9 @@ public class Blitz {
     public void onInitialize(ProxyInitializeEvent event) {
         Sodium.initializeSodium();
 
-//        Arrays.asList(
-//                new GenericListener(),
-//                new PartyListener(),
-//                new FriendListener()
-//        ).forEach(Pigeon.getPigeon().getListenersRegistry()::registerListener);
+        Arrays.asList(
+                new GenericListener()
+        ).forEach(Postman.getPostman().getListenersRegistry()::registerListener);
 
         Arrays.asList(
                 new PlayerEvents()
